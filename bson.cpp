@@ -195,7 +195,7 @@ void VariantToBsonConverter::_convertRegex(bson_t *bson, const char *key, Object
 
 void VariantToBsonConverter::convertPart(bson_t *bson, const char *key, Object v)
 {
-	std::cout << "object coverted to ";
+	std::cout << v.getClassName() << " object coverted to ";
 
 	if (v.instanceof(String("MongoDB\\BSON\\Regex"))) {
 		std::cout << "REGEXP\n";
