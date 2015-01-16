@@ -1,6 +1,8 @@
 <?php
 var_dump(extension_loaded("mongodb"));
 
+$r = new MongoDB\Driver\ReadPreference(MongoDB\Driver\ReadPreference::RP_PRIMARY);
+/*
 $m = new MongoDB\Manager("mongodb://localhost:27017");
 
 class myClass {
@@ -42,6 +44,6 @@ $w = new MongoDB\Driver\Query(
 );
 
 echo MongoDB\Driver\Query::FLAG_NONE, "\n";
-
+*/
 var_dump( $r );
 ?>

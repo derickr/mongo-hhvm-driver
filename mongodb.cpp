@@ -16,6 +16,7 @@
 
 #include "hphp/runtime/base/base-includes.h"
 #include "hphp/runtime/vm/native-data.h"
+#include "hphp/runtime/base/array-init.h"
 
 #include "bson.h"
 #include "utils.h"
@@ -37,6 +38,38 @@ extern "C" {
 
 namespace HPHP {
 
+const StaticString s_MongoDriverWriteResult_className("MongoDB\\Driver\\WriteResult");
+
+#if 0
+class Utils
+{
+	public:
+		ObjectData* AllocInvalidArgumentException(const Variant& message);
+}
+
+ObjectData* Utils::AllocInvalidArgumentException(const Variant& message) {
+	ObjectData* inst;
+	TypedValue ret;
+
+	c_invalidArgumentException = Unit::lookupClass(s_MongoDBInvalidArgumentException.get());
+	inst = ObjectData::newInstance(c_invalidArgumentException);
+
+	{
+		CountableHelper cnt(inst);
+		g_context->invokeFunc(
+			&ret,
+			->getCtor(),
+			make_packed_array(message),
+			inst
+		);
+	}
+	tvRefcountedDecRef(&ret);
+}
+
+const StaticString s_MongoDriverWriteResult_className("MongoDB\\Driver\\WriteResult");
+#endif
+
+/* {{{ MongoDB\Manager */
 class MongoDBManagerData
 {
 	public:
@@ -73,8 +106,6 @@ static void HHVM_METHOD(MongoDBManager, __construct, const String &dsn, const Ar
 
 	data->m_client = client;
 }
-
-const StaticString s_MongoDriverWriteResult_className("MongoDB\\Driver\\WriteResult");
 
 static Object HHVM_METHOD(MongoDBManager, executeInsert, const String &ns, const Variant &document, const Object &writeConcern)
 {
@@ -119,19 +150,81 @@ static Object HHVM_METHOD(MongoDBManager, executeInsert, const String &ns, const
 
 	return Object(obj);
 }
+/* }}} */
 
+/* {{{ MongoDB\Driver\Query */
 const StaticString s_MongoDriverQuery_className("MongoDB\\Driver\\Query");
+/* }}} */
+
+/* {{{ MongoDB\Driver\ReadPreference */
+const StaticString s_MongoDriverReadPreference_className("MongoDB\\Driver\\ReadPreference");
+
+class MongoDBDriverReadPreferenceData
+{
+	public:
+		static Class* s_class;
+		static const StaticString s_className;
+
+//		mongoc_read_prefs_t *m_read_preference = NULL;
+		int m_test = 0;
+
+		static Class* getClass();
+
+		void sweep() {
+//			mongoc_read_prefs_destroy(m_read_preference);
+			std::cout << "sweep: " << m_test << "\n";
+		}
+
+		~MongoDBDriverReadPreferenceData() {
+			sweep();
+		};
+};
+
+Class* MongoDBDriverReadPreferenceData::s_class = nullptr;
+const StaticString MongoDBDriverReadPreferenceData::s_className("MongoDBDriverReadPreference");
+IMPLEMENT_GET_CLASS(MongoDBDriverReadPreferenceData);
+
+static void HHVM_METHOD(MongoDBDriverReadPreference, _setReadPreference, int readPreference)
+{
+	MongoDBDriverReadPreferenceData* data = Native::data<MongoDBDriverReadPreferenceData>(this_);
+
+//	data->m_read_preference = mongoc_read_prefs_new((mongoc_read_mode_t) readPreference);
+	data->m_test = 1;
+}
+
+static void HHVM_METHOD(MongoDBDriverReadPreference, _setReadPreferenceTags, const Variant &tagSets)
+{
+	MongoDBDriverReadPreferenceData* data = Native::data<MongoDBDriverReadPreferenceData>(this_);
+	bson_t *bson;
+	
+	/* Convert argument */
+	VariantToBsonConverter converter(tagSets);
+	bson = bson_new();
+	converter.convert(bson);
+#if 0
+	/* Set and check errors */
+	mongoc_read_prefs_set_tags(data->m_read_preference, bson);
+	bson_destroy(bson);
+	if (!mongoc_read_prefs_is_valid(data->m_read_preference)) {
+		/* Throw exception */
+		throw Object(SystemLib::AllocInvalidArgumentExceptionObject("Invalid tagSet"));
+	}
+#endif
+}
+/* }}} */
 
 static class MongoDBExtension : public Extension {
 	public:
 		MongoDBExtension() : Extension("mongodb") {}
 
 		virtual void moduleInit() {
+			/* MongoDB\Manager */
 			HHVM_MALIAS(MongoDB\\Manager, __construct, MongoDBManager, __construct);
 			HHVM_MALIAS(MongoDB\\Manager, executeInsert, MongoDBManager, executeInsert);
 
 			Native::registerNativeDataInfo<MongoDBManagerData>(MongoDBManagerData::s_className.get());
 
+			/* MongoDb\Driver\Query */
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_NONE"), (int64_t) MONGOC_QUERY_NONE);
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_TAILABLE_CURSOR"), (int64_t) MONGOC_QUERY_TAILABLE_CURSOR);
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_SLAVE_OK"), (int64_t) MONGOC_QUERY_SLAVE_OK);
@@ -140,6 +233,18 @@ static class MongoDBExtension : public Extension {
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_AWAIT_DATA"), (int64_t) MONGOC_QUERY_AWAIT_DATA);
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_EXHAUST"), (int64_t) MONGOC_QUERY_EXHAUST);
 			Native::registerClassConstant<KindOfInt64>(s_MongoDriverQuery_className.get(), makeStaticString("FLAG_PARTIAL"), (int64_t) MONGOC_QUERY_PARTIAL);
+
+			/* MongoDb\Driver\ReadPreference */
+			HHVM_MALIAS(MongoDB\\Driver\\ReadPreference, _setReadPreference, MongoDBDriverReadPreference, _setReadPreference);
+			HHVM_MALIAS(MongoDB\\Driver\\ReadPreference, _setReadPreferenceTags, MongoDBDriverReadPreference, _setReadPreferenceTags);
+			
+			Native::registerNativeDataInfo<MongoDBDriverReadPreferenceData>(MongoDBDriverReadPreferenceData::s_className.get());
+
+			Native::registerClassConstant<KindOfInt64>(s_MongoDriverReadPreference_className.get(), makeStaticString("RP_PRIMARY"), (int64_t) MONGOC_READ_PRIMARY);
+			Native::registerClassConstant<KindOfInt64>(s_MongoDriverReadPreference_className.get(), makeStaticString("RP_PRIMARY_PREFERRED"), (int64_t) MONGOC_READ_PRIMARY_PREFERRED);
+			Native::registerClassConstant<KindOfInt64>(s_MongoDriverReadPreference_className.get(), makeStaticString("RP_SECONDARY"), (int64_t) MONGOC_READ_SECONDARY);
+			Native::registerClassConstant<KindOfInt64>(s_MongoDriverReadPreference_className.get(), makeStaticString("RP_SECONDARY_PREFERRED"), (int64_t) MONGOC_READ_SECONDARY_PREFERRED);
+			Native::registerClassConstant<KindOfInt64>(s_MongoDriverReadPreference_className.get(), makeStaticString("RP_NEAREST"), (int64_t) MONGOC_READ_NEAREST);
 
 			loadSystemlib("mongodb");
 			mongoc_init();

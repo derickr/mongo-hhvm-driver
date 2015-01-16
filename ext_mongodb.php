@@ -10,9 +10,8 @@ class Manager {
 	{
 	}
 
-	function executeQuery(string $namespace, MongoDB\Driver\Query $query, MongoDB\Driver\ReadPreference $readPreference = null): MongoDB\Driver\QueryResult
-	{
-	}
+	<<__Native>>
+	function executeQuery(string $namespace, MongoDB\Driver\Query $query, MongoDB\Driver\ReadPreference $readPreference = null): MongoDB\Driver\QueryResult;
 
 	function executeWriteBatch(string $namespace, MongoDB\Driver\WriteBatch $batch, MongoDB\Driver\WriteConcern $writeConcern = null): MongoDB\Driver\WriteResult
 	{
@@ -114,6 +113,42 @@ final class Query {
 		$zquery['$query'] = $filter;
 
 		$this->query['query'] = $zquery;
+	}
+}
+
+final class QueryResult {
+}
+
+<<__NativeData("MongoDBReadPreference")>>
+final class ReadPreference {
+	<<__Native>>
+	private function _setReadPreference(int $readPreference): void;
+
+	<<__Native>>
+	private function _setReadPreferenceTags(array $tagSets): void;
+
+	public function __construct(int $readPreference, mixed $tagSets = null)
+	{
+		switch ($readPreference) {
+			case ReadPreference::RP_PRIMARY:
+			case ReadPreference::RP_PRIMARY_PREFERRED:
+			case ReadPreference::RP_SECONDARY:
+			case ReadPreference::RP_SECONDARY_PREFERRED:
+			case ReadPreference::RP_NEAREST:
+				// calling into Native
+				$this->_setReadPreference($readPreference);
+
+				if ($tagSets) {
+					// calling into Native, might throw exception
+					$this->_setReadPreferenceTags($tagSets);
+				}
+
+				break;
+
+			default:
+				Utils::throwHippoException(Utils::ERROR_INVALID_ARGUMENT, "Invalid ReadPreference");
+				break;
+		}
 	}
 }
 
