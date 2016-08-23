@@ -3,7 +3,6 @@ HHVM_EXTENSION(mongodb
  bson.cpp pool.cpp utils.cpp
  src/MongoDB/BSON/functions.cpp
  src/MongoDB/BSON/Binary.cpp
- src/MongoDB/BSON/Decimal128.cpp
  src/MongoDB/BSON/Javascript.cpp
  src/MongoDB/BSON/ObjectID.cpp
  src/MongoDB/BSON/Regex.cpp
@@ -27,7 +26,6 @@ HHVM_EXTENSION(mongodb
  libbson/src/yajl/yajl_version.c
  libbson/src/bson/bcon.c libbson/src/bson/bson-atomic.c
  libbson/src/bson/bson-clock.c libbson/src/bson/bson-context.c
- libbson/src/bson/bson-decimal128.c
  libbson/src/bson/bson-error.c libbson/src/bson/bson-iso8601.c
  libbson/src/bson/bson-iter.c libbson/src/bson/bson-json.c
  libbson/src/bson/bson-keys.c libbson/src/bson/bson-md5.c

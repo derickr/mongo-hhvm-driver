@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+#ifdef BSON_EXPERIMENTAL_FEATURES
 
 #include "hphp/runtime/ext/extension.h"
 #include "hphp/runtime/vm/native-data.h"
@@ -71,3 +72,4 @@ Array HHVM_METHOD(MongoDBBsonDecimal128, __debugInfo)
 }
 
 }
+#endif /* BSON_EXPERIMENTAL_FEATURES */

@@ -1,5 +1,7 @@
 --TEST--
 MongoDB\BSON\Decimal128 value object
+--SKIPIF--
+<?php if ( !class_exists( "MongoDB\BSON\Decimal128" ) ) { echo "skip MongoDB\BSON\Decimal128 class is not available\n"; } ?>
 --FILE--
 <?php
 $tests = [

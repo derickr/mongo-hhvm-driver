@@ -28,7 +28,9 @@
 #include <iostream>
 
 #include "src/MongoDB/BSON/Binary.h"
+#ifdef BSON_EXPERIMENTAL_FEATURES
 #include "src/MongoDB/BSON/Decimal128.h"
+#endif
 #include "src/MongoDB/BSON/Javascript.h"
 #include "src/MongoDB/BSON/ObjectID.h"
 #include "src/MongoDB/BSON/Regex.h"
@@ -285,6 +287,7 @@ void VariantToBsonConverter::_convertBinary(bson_t *bson, const char *key, Objec
 }
 /* }}} */
 
+#ifdef BSON_EXPERIMENTAL_FEATURES
 /* {{{ MongoDriver\BSON\Decimal128 */
 void VariantToBsonConverter::_convertDecimal128(bson_t *bson, const char *key, Object v)
 {
@@ -293,6 +296,7 @@ void VariantToBsonConverter::_convertDecimal128(bson_t *bson, const char *key, O
 	bson_append_decimal128(bson, key, -1, &data->m_decimal);
 }
 /* }}} */
+#endif
 
 /* {{{ MongoDriver\BSON\Javascript */
 void VariantToBsonConverter::_convertJavascript(bson_t *bson, const char *key, Object v)
@@ -442,10 +446,12 @@ bool VariantToBsonConverter::convertSpecialObject(bson_t *bson, const char *key,
 			_convertBinary(bson, key, v);
 			return true;
 		}
+#ifdef BSON_EXPERIMENTAL_FEATURES
 		if (v.instanceof(s_MongoBsonDecimal128_className)) {
 			_convertDecimal128(bson, key, v);
 			return true;
 		}
+#endif
 		if (v.instanceof(s_MongoBsonJavascript_className)) {
 			_convertJavascript(bson, key, v);
 			return true;
@@ -748,6 +754,7 @@ void hippo_bson_visit_unsupported_type(const bson_iter_t *iter __attribute__((un
 	throw MongoDriver::Utils::throwUnexpectedValueException(message);
 }
 
+#ifdef BSON_EXPERIMENTAL_FEATURES
 bool hippo_bson_visit_decimal128(const bson_iter_t *iter __attribute__((unused)), const char *key, const bson_decimal128_t *v_decimal128, void *data)
 {
 	hippo_bson_state *state = (hippo_bson_state*) data;
@@ -764,7 +771,7 @@ bool hippo_bson_visit_decimal128(const bson_iter_t *iter __attribute__((unused))
 
 	return false;
 }
-
+#endif
 
 static const bson_visitor_t hippo_bson_visitors = {
 	NULL /* hippo_phongo_bson_visit_before*/,
@@ -791,7 +798,9 @@ static const bson_visitor_t hippo_bson_visitors = {
 	hippo_bson_visit_maxkey,
 	hippo_bson_visit_minkey,
 	hippo_bson_visit_unsupported_type,
+#ifdef BSON_EXPERIMENTAL_FEATURES
 	hippo_bson_visit_decimal128,
+#endif
 	{ NULL }
 };
 /* }}} */

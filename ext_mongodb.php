@@ -701,6 +701,7 @@ final class Binary implements Type, \Serializable
 	function __debugInfo() : array;
 }
 
+/*
 <<__NativeData("MongoDBBsonDecimal128")>>
 final class Decimal128 implements Type, \Serializable
 {
@@ -715,6 +716,7 @@ final class Decimal128 implements Type, \Serializable
 	<<__Native>>
 	function __debugInfo() : array;
 }
+*/
 
 final class Javascript implements Type, \Serializable
 {

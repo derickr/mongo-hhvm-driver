@@ -33,7 +33,9 @@
 
 #include "src/MongoDB/BSON/functions.h"
 #include "src/MongoDB/BSON/Binary.h"
+#ifdef BSON_EXPERIMENTAL_FEATURES
 #include "src/MongoDB/BSON/Decimal128.h"
+#endif
 #include "src/MongoDB/BSON/Javascript.h"
 #include "src/MongoDB/BSON/ObjectID.h"
 #include "src/MongoDB/BSON/UTCDateTime.h"
@@ -106,12 +108,14 @@ static class MongoDBExtension : public Extension {
 
 			HHVM_MALIAS(MongoDB\\BSON\\Binary, __debugInfo, MongoDBBsonBinary, __debugInfo);
 
+#ifdef BSON_EXPERIMENTAL_FEATURES
 			/* MongoDB\BSON\Decimal128 */
 			HHVM_MALIAS(MongoDB\\BSON\\Decimal128, __construct, MongoDBBsonDecimal128, __construct);
 			HHVM_MALIAS(MongoDB\\BSON\\Decimal128, __debugInfo, MongoDBBsonDecimal128, __debugInfo);
 			HHVM_MALIAS(MongoDB\\BSON\\Decimal128, __toString, MongoDBBsonDecimal128, __toString);
 
 			Native::registerNativeDataInfo<MongoDBBsonDecimal128Data>(MongoDBBsonDecimal128Data::s_className.get());
+#endif
 
 			/* MongoDB\BSON\ObjectID */
 			HHVM_MALIAS(MongoDB\\BSON\\ObjectID, __construct, MongoDBBsonObjectID, __construct);

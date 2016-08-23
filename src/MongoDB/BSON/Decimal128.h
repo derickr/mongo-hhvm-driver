@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+#ifdef BSON_EXPERIMENTAL_FEATURES
+
 #ifndef __MONGODB_BSON_DECIMAL_H__
 #define __MONGODB_BSON_DECIMAL_H__
 namespace HPHP {
@@ -46,3 +48,5 @@ String HHVM_METHOD(MongoDBBsonDecimal128, __toString);
 Array HHVM_METHOD(MongoDBBsonDecimal128, __debugInfo);
 }
 #endif
+
+#endif /* BSON_EXPERIMENTAL_FEATURES */
